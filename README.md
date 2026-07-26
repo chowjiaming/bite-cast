@@ -10,12 +10,12 @@ See [`docs/superpowers/specs/2026-07-26-bitecast-design.md`](docs/superpowers/sp
 
 ## Status
 
-v1 implemented. Run `npm run dev` for the SPA alone, or `npx netlify dev` to include the `/api/plan` function.
+v1 implemented. Run `npm run dev` for the SPA alone, or `npm run dev:netlify` to include the `/api/plan` function.
 
 ## Scripts
 
 - `npm run dev` — Vite dev server (the API function is not served)
-- `npx netlify dev` — full stack, including `/api/plan`
+- `npm run dev:netlify` — full stack via Netlify Dev, including `/api/plan`
 - `npm run test` — Vitest
 - `npm run typecheck` — TypeScript
 - `npm run build` — typecheck then production build
