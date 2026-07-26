@@ -61,4 +61,58 @@ describe("recommend", () => {
     expect(result.decision).toBe("go-out");
     expect(result.preferredCategories).toEqual([]);
   });
+
+  it("prefers wet reason over cold when precipitation and low temperature overlap", () => {
+    const result = recommend({
+      ...baseWeather,
+      precipitationProbability: 75,
+      tempMax: 4,
+    });
+    expect(result.reason).toContain("75%");
+    expect(result.reason).not.toContain("warm up");
+  });
+
+  it("prefers cold reason over windy when low temperature and strong wind overlap", () => {
+    const result = recommend({
+      ...baseWeather,
+      tempMax: 4,
+      windSpeedMax: 55,
+    });
+    expect(result.reason).toContain("4°C");
+    expect(result.reason).toContain("warm up");
+    expect(result.reason).not.toContain("Wind gusting");
+  });
+
+  it("prefers windy stay-in over hot go-out when strong wind and high temperature overlap", () => {
+    const result = recommend({
+      ...baseWeather,
+      windSpeedMax: 55,
+      tempMax: 34,
+    });
+    expect(result.decision).toBe("stay-in");
+    expect(result.reason).toContain("Wind gusting");
+    expect(result.reason).not.toContain("shade");
+  });
+
+  it("prefers hot reason over clear-and-comfortable when high temperature and clear skies overlap", () => {
+    const result = recommend({
+      ...baseWeather,
+      weatherCode: 0,
+      tempMax: 34,
+    });
+    expect(result.reason).toContain("shade");
+    expect(result.reason).not.toContain("ideal for getting outside");
+  });
+
+  it("prefers wet stay-in over hot go-out during a thunderstorm with high temperature", () => {
+    const result = recommend({
+      ...baseWeather,
+      weatherCode: 95,
+      tempMax: 34,
+      precipitationProbability: 5,
+    });
+    expect(result.decision).toBe("stay-in");
+    expect(result.reason).toContain("5%");
+    expect(result.reason).not.toContain("shade");
+  });
 });
