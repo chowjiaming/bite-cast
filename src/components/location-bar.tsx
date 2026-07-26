@@ -8,9 +8,11 @@ import { citySearchSchema } from "@/lib/contracts";
 type LocationBarProps = {
   placeLabel: string | null;
   onSearch: (query: string) => void;
+  /** When set, shows a control that clears the city override and returns to IP geolocation. */
+  onUseMyLocation?: () => void;
 };
 
-export function LocationBar({ placeLabel, onSearch }: LocationBarProps) {
+export function LocationBar({ placeLabel, onSearch, onUseMyLocation }: LocationBarProps) {
   const form = useForm({
     defaultValues: { city: "" },
     onSubmit: ({ value, formApi }) => {
@@ -51,6 +53,11 @@ export function LocationBar({ placeLabel, onSearch }: LocationBarProps) {
         }}
       </form.Field>
       <Button type="submit">Search</Button>
+      {onUseMyLocation === undefined ? null : (
+        <Button type="button" variant="ghost" onClick={onUseMyLocation}>
+          Use my location
+        </Button>
+      )}
       {placeLabel === null ? null : (
         <p className="text-muted-foreground w-full text-sm">Showing {placeLabel}</p>
       )}

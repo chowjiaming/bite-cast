@@ -35,6 +35,24 @@ describe("LocationBar", () => {
     render(<LocationBar placeLabel="Toronto, Canada" onSearch={vi.fn()} />);
     expect(screen.getByText(/Toronto, Canada/)).toBeInTheDocument();
   });
+
+  it("offers to return to ip geolocation when a city override is active", async () => {
+    const onUseMyLocation = vi.fn();
+    render(
+      <LocationBar
+        placeLabel="Singapore, Singapore"
+        onSearch={vi.fn()}
+        onUseMyLocation={onUseMyLocation}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: /use my location/i }));
+    expect(onUseMyLocation).toHaveBeenCalledOnce();
+  });
+
+  it("hides the location reset when there is no city override", () => {
+    render(<LocationBar placeLabel={null} onSearch={vi.fn()} />);
+    expect(screen.queryByRole("button", { name: /use my location/i })).not.toBeInTheDocument();
+  });
 });
 
 describe("DayPicker", () => {
