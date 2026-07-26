@@ -128,6 +128,39 @@ describe("buildDayPlan", () => {
     ).rejects.toMatchObject({ code: "location_required" });
   });
 
+  it("raises location_required when ip geolocation fails upstream", async () => {
+    const deps = makeDeps({
+      locateByIp: vi.fn(async () => {
+        throw new UpstreamError("ipwho", "http_error", "ipwho returned 503");
+      }),
+    });
+    await expect(
+      buildDayPlan({ request: request(), clientIp: "203.0.113.7" }, deps),
+    ).rejects.toMatchObject({ code: "location_required" });
+  });
+
+  it("raises upstream_timeout when city geocoding times out", async () => {
+    const deps = makeDeps({
+      geocodeCity: vi.fn(async () => {
+        throw new UpstreamError("open-meteo-geocoding", "timeout", "geocoding timed out");
+      }),
+    });
+    await expect(
+      buildDayPlan({ request: request({ q: "Singapore" }), clientIp: null }, deps),
+    ).rejects.toMatchObject({ code: "upstream_timeout" });
+  });
+
+  it("raises upstream_timeout when city geocoding fails upstream", async () => {
+    const deps = makeDeps({
+      geocodeCity: vi.fn(async () => {
+        throw new UpstreamError("open-meteo-geocoding", "http_error", "geocoding returned 502");
+      }),
+    });
+    await expect(
+      buildDayPlan({ request: request({ q: "Singapore" }), clientIp: null }, deps),
+    ).rejects.toMatchObject({ code: "upstream_timeout" });
+  });
+
   it("raises weather_unavailable when the forecast fails", async () => {
     const deps = makeDeps({
       fetchForecast: vi.fn(async () => {

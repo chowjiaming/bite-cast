@@ -35,20 +35,41 @@ export type PlanDependencies = MealSelectionDeps & {
 
 export type BuildPlanInput = { request: PlanRequest; clientIp: string | null };
 
+function mapGeocodeUpstreamError(error: UpstreamError): PlanError {
+  if (error.kind === "timeout") {
+    return new PlanError("upstream_timeout", "Place lookup timed out. Try again.");
+  }
+  return new PlanError("upstream_timeout", "Place lookup is temporarily unavailable. Try again.");
+}
+
 async function resolvePlace(input: BuildPlanInput, deps: PlanDependencies): Promise<ResolvedPlace> {
   if (input.request.q !== undefined) {
-    const place = await deps.geocodeCity(input.request.q);
-    if (place === null) {
-      throw new PlanError("place_not_found", "No place matched that search.");
+    try {
+      const place = await deps.geocodeCity(input.request.q);
+      if (place === null) {
+        throw new PlanError("place_not_found", "No place matched that search.");
+      }
+      return place;
+    } catch (error) {
+      if (error instanceof UpstreamError) {
+        throw mapGeocodeUpstreamError(error);
+      }
+      throw error;
     }
-    return place;
   }
 
-  const place = await deps.locateByIp(input.clientIp);
-  if (place === null) {
-    throw new PlanError("location_required", "Could not place you from your connection.");
+  try {
+    const place = await deps.locateByIp(input.clientIp);
+    if (place === null) {
+      throw new PlanError("location_required", "Could not place you from your connection.");
+    }
+    return place;
+  } catch (error) {
+    if (error instanceof UpstreamError) {
+      throw new PlanError("location_required", "Could not place you from your connection.");
+    }
+    throw error;
   }
-  return place;
 }
 
 async function loadForecast(place: ResolvedPlace, deps: PlanDependencies): Promise<Forecast> {
