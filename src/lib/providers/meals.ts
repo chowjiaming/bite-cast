@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Meal, MealSummary } from "../contracts";
 import { fetchJson } from "./http";
+import { foldNumberedSlots, readSlot } from "./numbered-slots";
 
 const BASE_URL = "https://www.themealdb.com/api/json/v1/1";
 const MAX_INGREDIENT_SLOTS = 20;
@@ -33,24 +34,6 @@ const lookupResponseSchema = z.object({
     )
     .nullable(),
 });
-
-type RawMeal = z.infer<typeof lookupResponseSchema>["meals"] extends (infer T)[] | null
-  ? T
-  : never;
-
-function readSlot(raw: RawMeal, key: string): string {
-  const value = raw[key];
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function toIngredients(raw: RawMeal): Array<{ name: string; measure: string }> {
-  return Array.from({ length: MAX_INGREDIENT_SLOTS }, (_, index) => index + 1)
-    .map((slot) => ({
-      name: readSlot(raw, `strIngredient${slot}`),
-      measure: readSlot(raw, `strMeasure${slot}`),
-    }))
-    .filter((entry) => entry.name !== "");
-}
 
 async function filterMeals(
   parameter: "a" | "i" | "c",
@@ -107,7 +90,7 @@ export async function lookupMeal(id: string, fetchImpl?: typeof fetch): Promise<
     category: readSlot(raw, "strCategory"),
     area: readSlot(raw, "strArea"),
     tags: tags === "" ? [] : tags.split(",").map((tag) => tag.trim()).filter(Boolean),
-    ingredients: toIngredients(raw),
+    ingredients: foldNumberedSlots(raw, MAX_INGREDIENT_SLOTS),
     instructions: readSlot(raw, "strInstructions"),
     sourceUrl: readSlot(raw, "strSource") || null,
   };
