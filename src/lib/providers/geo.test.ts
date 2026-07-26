@@ -66,4 +66,44 @@ describe("locateByIp", () => {
     expect(await locateByIp(null, fetchImpl)).toBeNull();
     expect(fetchImpl).not.toHaveBeenCalled();
   });
+
+  it("returns null without calling out when the ip is blank", async () => {
+    const fetchImpl = respondWith(ipSuccess);
+    expect(await locateByIp("   ", fetchImpl)).toBeNull();
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("returns null when the provider omits a city", async () => {
+    expect(
+      await locateByIp(
+        "203.0.113.7",
+        respondWith({
+          success: true,
+          city: null,
+          country: "Canada",
+          latitude: 43.7064895,
+          longitude: -79.3986647,
+        }),
+      ),
+    ).toBeNull();
+  });
+
+  it("maps a missing country to an empty string", async () => {
+    const place = await locateByIp(
+      "203.0.113.7",
+      respondWith({
+        success: true,
+        city: "Toronto",
+        latitude: 43.7064895,
+        longitude: -79.3986647,
+      }),
+    );
+    expect(place).toEqual({
+      name: "Toronto",
+      country: "",
+      latitude: 43.7064895,
+      longitude: -79.3986647,
+      source: "ip",
+    });
+  });
 });

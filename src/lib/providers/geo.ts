@@ -26,7 +26,7 @@ const ipLookupSchema = z.union([
   z.object({
     success: z.literal(true),
     city: z.string().nullable(),
-    country: z.string().nullable(),
+    country: z.string().nullable().optional(),
     latitude: z.number(),
     longitude: z.number(),
   }),
