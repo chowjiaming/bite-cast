@@ -6,7 +6,10 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 
 export default defineConfig({
   plugins: [
-    tanstackRouter({ target: "react", autoCodeSplitting: true }),
+    // src/routes is added later; the plugin logs ENOENT during Vitest.
+    ...(process.env.VITEST
+      ? []
+      : [tanstackRouter({ target: "react", autoCodeSplitting: true })]),
     react(),
     tailwindcss(),
   ],
