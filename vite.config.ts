@@ -20,5 +20,7 @@ export default defineConfig({
     environment: "node",
     globals: true,
     setupFiles: ["./tests/setup.ts"],
+    // netlify dev copies functions into .netlify/functions-serve; those are not our suite.
+    exclude: ["**/node_modules/**", "**/dist/**", "**/.netlify/**"],
   },
 });
