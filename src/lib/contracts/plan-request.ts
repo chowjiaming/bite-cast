@@ -21,6 +21,9 @@ export const planRequestSchema = z.object({
 
 export type PlanRequest = z.infer<typeof planRequestSchema>;
 
+/** The city field is required at the point of search, unlike the optional `q` on a plan request. */
+export const citySearchSchema = z.string().trim().min(1, "Enter a city").max(80);
+
 export function planRequestFromSearchParams(params: URLSearchParams): Record<string, string> {
   const raw: Record<string, string> = {};
   for (const key of QUERY_KEYS) {
