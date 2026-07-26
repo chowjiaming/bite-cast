@@ -9,4 +9,4 @@
 # Vite's default port; without this, `netlify dev` waits on 3000 and times out.
 [dev]
   targetPort = 5173
-  framework = "#static"
+  framework = "#auto"
