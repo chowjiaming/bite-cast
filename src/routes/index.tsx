@@ -19,6 +19,22 @@ export const Route = createFileRoute("/")({
   component: PlanPage,
 });
 
+export function PlanErrorAlerts({ error }: { error: unknown }) {
+  if (!(error instanceof ApiError)) {
+    return null;
+  }
+
+  if (error.code === "location_required") {
+    return <p role="alert">We could not place you automatically. Enter a city to get started.</p>;
+  }
+
+  if (error.code === "place_not_found") {
+    return <p role="alert">No place matched that search. Try another city.</p>;
+  }
+
+  return <p role="alert">{error.message}</p>;
+}
+
 function PlanPage() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
@@ -63,19 +79,7 @@ function PlanPage() {
 
       {isPending ? <PlanSkeleton /> : null}
 
-      {error instanceof ApiError && error.code === "location_required" ? (
-        <p role="alert">We could not place you automatically. Enter a city to get started.</p>
-      ) : null}
-
-      {error instanceof ApiError && error.code === "place_not_found" ? (
-        <p role="alert">No place matched that search. Try another city.</p>
-      ) : null}
-
-      {error instanceof ApiError &&
-      error.code !== "location_required" &&
-      error.code !== "place_not_found" ? (
-        <p role="alert">{error.message}</p>
-      ) : null}
+      <PlanErrorAlerts error={error} />
 
       {plan === undefined ? null : (
         <div className="space-y-6">

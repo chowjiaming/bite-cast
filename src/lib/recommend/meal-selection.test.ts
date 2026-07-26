@@ -60,8 +60,9 @@ describe("chooseSample", () => {
 
   it("does not mutate the input", () => {
     const items = [meal("1"), meal("2")];
+    const original = [meal("1"), meal("2")];
     chooseSample(items, 1, () => 0);
-    expect(items).toHaveLength(2);
+    expect(items).toEqual(original);
   });
 });
 

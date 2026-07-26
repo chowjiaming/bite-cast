@@ -47,6 +47,7 @@ describe("recommend", () => {
     const result = recommend({ ...baseWeather, tempMax: 34, weatherCode: 0 });
     expect(result.decision).toBe("go-out");
     expect(result.reason).toContain("shade");
+    expect(result.reason).not.toContain("ideal for getting outside");
     expect(result.preferredCategories).toContain("Dessert");
   });
 
@@ -92,16 +93,6 @@ describe("recommend", () => {
     expect(result.decision).toBe("stay-in");
     expect(result.reason).toContain("Wind gusting");
     expect(result.reason).not.toContain("shade");
-  });
-
-  it("prefers hot reason over clear-and-comfortable when high temperature and clear skies overlap", () => {
-    const result = recommend({
-      ...baseWeather,
-      weatherCode: 0,
-      tempMax: 34,
-    });
-    expect(result.reason).toContain("shade");
-    expect(result.reason).not.toContain("ideal for getting outside");
   });
 
   it("prefers wet stay-in over hot go-out during a thunderstorm with high temperature", () => {
