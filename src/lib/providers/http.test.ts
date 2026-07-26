@@ -67,4 +67,27 @@ describe("fetchJson", () => {
     });
     await expect(failure).rejects.toMatchObject({ kind: "network" });
   });
+
+  it("raises network when fetchImpl rejects with AbortError without our abort", async () => {
+    const failure = fetchJson({
+      provider: "test",
+      url: "https://example.test/external-abort",
+      schema,
+      fetchImpl: async () => {
+        throw new DOMException("Aborted", "AbortError");
+      },
+    });
+    await expect(failure).rejects.toMatchObject({ kind: "network" });
+  });
+
+  it("raises invalid_body when the response body is not valid JSON", async () => {
+    const failure = fetchJson({
+      provider: "test",
+      url: "https://example.test/bad-json",
+      schema,
+      fetchImpl: async () =>
+        new Response("not json", { status: 200, headers: { "content-type": "application/json" } }),
+    });
+    await expect(failure).rejects.toMatchObject({ kind: "invalid_body" });
+  });
 });

@@ -40,12 +40,12 @@ export async function fetchJson<T>({
       signal: controller.signal,
       headers: { accept: "application/json" },
     });
-  } catch (error) {
-    const aborted = error instanceof Error && error.name === "AbortError";
+  } catch {
+    const timedOut = controller.signal.aborted;
     throw new UpstreamError(
       provider,
-      aborted ? "timeout" : "network",
-      aborted ? `${provider} timed out after ${timeoutMs}ms` : `${provider} was unreachable`,
+      timedOut ? "timeout" : "network",
+      timedOut ? `${provider} timed out after ${timeoutMs}ms` : `${provider} was unreachable`,
     );
   } finally {
     clearTimeout(timer);
