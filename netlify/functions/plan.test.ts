@@ -92,6 +92,7 @@ describe("plan handler", () => {
     );
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(response.headers.get("netlify-cdn-cache-control")).toBeNull();
   });
 
   it("passes the client ip header to the geolocation provider", async () => {
@@ -134,6 +135,19 @@ describe("plan handler", () => {
     });
     const response = await createHandler(deps)(get("https://bitecast.test/api/plan?q=Singapore"));
     expect(response.status).toBe(502);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(response.headers.get("netlify-cdn-cache-control")).toBeNull();
+  });
+
+  it("maps upstream_timeout to 504", async () => {
+    const deps = makeDeps({
+      fetchForecast: vi.fn(async () => {
+        throw new PlanError("upstream_timeout", "timed out");
+      }),
+    });
+    const response = await createHandler(deps)(get("https://bitecast.test/api/plan?q=Singapore"));
+    expect(response.status).toBe(504);
+    expect((await response.json()).error).toBe("upstream_timeout");
   });
 
   it("maps an unexpected failure to 500 without leaking the message", async () => {
