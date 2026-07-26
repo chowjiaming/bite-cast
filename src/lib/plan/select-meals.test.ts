@@ -90,12 +90,33 @@ describe("selectMeals", () => {
     const result = await selectMeals(
       request({ cuisine: "Italian" }),
       [],
-      makeDeps({
-        filterMealsByArea: vi.fn(async () => many),
-        filterMealsByCategory: vi.fn(async () => []),
-      }),
+      makeDeps({ filterMealsByArea: vi.fn(async () => many) }),
     );
     expect(result.meals).toHaveLength(2);
+  });
+
+  it("does not narrow an explicit filter by the default categories", async () => {
+    const filterMealsByCategory = vi.fn(async () => [summary("2")]);
+    const many = [summary("1"), summary("2"), summary("3")];
+    const result = await selectMeals(
+      request({ cuisine: "Italian" }),
+      [],
+      makeDeps({ filterMealsByArea: vi.fn(async () => many), filterMealsByCategory }),
+    );
+    expect(filterMealsByCategory).not.toHaveBeenCalled();
+    expect(result.meals).toHaveLength(2);
+  });
+
+  it("still ranks by the weather bias when the user has filtered", async () => {
+    const filterMealsByCategory = vi.fn(async () => [summary("3")]);
+    const many = [summary("1"), summary("2"), summary("3")];
+    const result = await selectMeals(
+      request({ cuisine: "Italian" }),
+      ["Pasta"],
+      makeDeps({ filterMealsByArea: vi.fn(async () => many), filterMealsByCategory }),
+    );
+    expect(filterMealsByCategory).toHaveBeenCalledWith("Pasta");
+    expect(result.meals.map((meal) => meal.id)).toEqual(["3"]);
   });
 
   it("degrades to a warning when the recipe API fails", async () => {

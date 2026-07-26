@@ -37,6 +37,21 @@ const activeNames = (filters: ActiveFilters): string[] =>
     .filter(([, value]) => value !== undefined)
     .map(([name]) => name);
 
+/**
+ * The defaults exist to give an unfiltered request a pool to draw from. Applying them as a ranking
+ * bias over an explicit user filter would discard matches the user asked for, so they are fetched
+ * only when the weather supplies a bias or when they are the sole source of candidates.
+ */
+function biasCategoriesFor(
+  preferredCategories: readonly string[],
+  hasUserFilters: boolean,
+): readonly string[] {
+  if (preferredCategories.length > 0) {
+    return preferredCategories;
+  }
+  return hasUserFilters ? [] : DEFAULT_CATEGORIES;
+}
+
 async function userFilterSets(
   filters: ActiveFilters,
   deps: MealSelectionDeps,
@@ -68,8 +83,12 @@ export async function selectMeals(
   preferredCategories: readonly string[],
   deps: MealSelectionDeps,
 ): Promise<MealSelection> {
-  const biasCategories =
-    preferredCategories.length > 0 ? preferredCategories : [...DEFAULT_CATEGORIES];
+  let filters: ActiveFilters = {
+    cuisine: request.cuisine,
+    ingredient: request.ingredient,
+    diet: request.diet,
+  };
+  const biasCategories = biasCategoriesFor(preferredCategories, activeNames(filters).length > 0);
 
   try {
     const biasSets = await Promise.all(
@@ -77,11 +96,6 @@ export async function selectMeals(
     );
     const biasIds = new Set(biasSets.flat().map((entry) => entry.id));
 
-    let filters: ActiveFilters = {
-      cuisine: request.cuisine,
-      ingredient: request.ingredient,
-      diet: request.diet,
-    };
     const relaxedFilters: string[] = [];
     let candidates = await candidatesFor(filters, biasSets, deps);
 
