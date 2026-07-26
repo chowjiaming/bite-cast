@@ -4,10 +4,6 @@ Weather-aware day planner: go out or stay in, plus meal and drink ideas for a pl
 
 Built from free, keyless public APIs (Open-Meteo, TheMealDB, TheCocktailDB, ipwho.is).
 
-## Design
-
-See [`docs/superpowers/specs/2026-07-26-bitecast-design.md`](docs/superpowers/specs/2026-07-26-bitecast-design.md).
-
 ## Status
 
 v1 implemented. Run `npm run dev` for the SPA alone, or `npm run dev:netlify` to include the `/api/plan` function.
