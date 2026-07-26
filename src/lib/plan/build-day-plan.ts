@@ -96,7 +96,14 @@ async function pickDrink(
     if (chosen === undefined) {
       return { drink: null, warnings: [] };
     }
-    return { drink: await deps.lookupDrink(chosen.id), warnings: [] };
+    const drink = await deps.lookupDrink(chosen.id);
+    if (drink === null) {
+      return {
+        drink: null,
+        warnings: ["A drink matched, but its details were unavailable."],
+      };
+    }
+    return { drink, warnings: [] };
   } catch (error) {
     if (error instanceof UpstreamError) {
       return { drink: null, warnings: ["Drink suggestions are temporarily unavailable."] };

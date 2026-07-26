@@ -131,6 +131,19 @@ describe("selectMeals", () => {
     expect(result.meals.map((meal) => meal.id)).toEqual(["3"]);
   });
 
+  it("warns when some recipe details fail to load", async () => {
+    const result = await selectMeals(
+      request({ cuisine: "Italian" }),
+      [],
+      makeDeps({
+        filterMealsByArea: vi.fn(async () => [summary("1"), summary("2")]),
+        lookupMeal: vi.fn(async (id: string) => (id === "1" ? fullMeal(id) : null)),
+      }),
+    );
+    expect(result.meals).toHaveLength(1);
+    expect(result.warnings).toContain("Some recipe details were unavailable.");
+  });
+
   it("degrades to a warning when the recipe API fails", async () => {
     const result = await selectMeals(
       request({ cuisine: "Italian" }),

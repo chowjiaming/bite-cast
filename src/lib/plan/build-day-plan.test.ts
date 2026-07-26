@@ -221,6 +221,13 @@ describe("buildDayPlan", () => {
     expect(plan.meta.warnings).not.toContain("Drink suggestions are temporarily unavailable.");
   });
 
+  it("warns when a drink candidate has no detail row", async () => {
+    const deps = makeDeps({ lookupDrink: vi.fn(async () => null) });
+    const plan = await buildDayPlan({ request: request({ q: "Singapore" }), clientIp: null }, deps);
+    expect(plan.drink).toBeNull();
+    expect(plan.meta.warnings).toContain("A drink matched, but its details were unavailable.");
+  });
+
   it("carries relaxed filters and meal warnings through to the payload", async () => {
     const deps = makeDeps({
       filterMealsByArea: vi.fn(async () => [summary("1")]),

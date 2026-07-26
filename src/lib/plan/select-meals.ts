@@ -113,11 +113,17 @@ export async function selectMeals(
     const chosen = chooseSample(preferredPool(candidates, biasIds), MEAL_COUNT, deps.random);
     const looked = await Promise.all(chosen.map((entry) => deps.lookupMeal(entry.id)));
     const meals = looked.filter((meal): meal is Meal => meal !== null);
+    const warnings: string[] = [];
+    if (meals.length === 0) {
+      warnings.push("No recipes matched — try a wider filter.");
+    } else if (meals.length < chosen.length) {
+      warnings.push("Some recipe details were unavailable.");
+    }
 
     return {
       meals,
       relaxedFilters,
-      warnings: meals.length === 0 ? ["No recipes matched — try a wider filter."] : [],
+      warnings,
     };
   } catch (error) {
     if (error instanceof UpstreamError) {
