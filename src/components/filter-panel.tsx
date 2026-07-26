@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { CUISINES } from "@/features/plan/cuisines";
 import { DIETS, type PlanRequest } from "@/lib/contracts";
+import { cn } from "@/lib/utils";
 
 type FilterPanelProps = {
   value: PlanRequest;
@@ -18,7 +19,8 @@ type FilterValues = {
   alcohol: boolean;
 };
 
-const SELECT_CLASS = "border-input bg-background h-9 w-full rounded-md border px-3 text-sm";
+const SELECT_CLASS =
+  "border-border bg-transparent h-8 rounded-lg border px-3 text-[11px] font-medium text-muted-foreground";
 
 const valuesFrom = (value: PlanRequest): FilterValues => ({
   cuisine: value.cuisine ?? "",
@@ -38,21 +40,23 @@ export function FilterPanel({ value, onChange }: FilterPanelProps) {
   }, [form, value.cuisine, value.ingredient, value.diet, value.alcohol]);
 
   return (
-    <div className="grid gap-4 sm:grid-cols-4">
+    <div className="flex flex-wrap items-center gap-2">
       <form.Field
         name="cuisine"
         listeners={{ onChange: ({ value: raw }) => onChange({ cuisine: orUndefined(raw) }) }}
       >
         {(field) => (
           <div className="space-y-1">
-            <Label htmlFor="cuisine">Cuisine</Label>
+            <Label htmlFor="cuisine" className="sr-only">
+              Cuisine
+            </Label>
             <select
               id="cuisine"
               className={SELECT_CLASS}
               value={field.state.value}
               onChange={(event) => field.handleChange(event.target.value)}
             >
-              <option value="">Any</option>
+              <option value="">Cuisine</option>
               {CUISINES.map((cuisine) => (
                 <option key={cuisine} value={cuisine}>
                   {cuisine}
@@ -67,18 +71,29 @@ export function FilterPanel({ value, onChange }: FilterPanelProps) {
         name="ingredient"
         listeners={{ onBlur: ({ value: raw }) => onChange({ ingredient: orUndefined(raw) }) }}
       >
-        {(field) => (
-          <div className="space-y-1">
-            <Label htmlFor="ingredient">Ingredient</Label>
-            <Input
-              id="ingredient"
-              placeholder="tomato"
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-            />
-          </div>
-        )}
+        {(field) => {
+          const active = field.state.value.trim() !== "";
+          return (
+            <div className="space-y-1">
+              <Label htmlFor="ingredient" className="sr-only">
+                Ingredient
+              </Label>
+              <Input
+                id="ingredient"
+                placeholder="Ingredient"
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+                className={cn(
+                  "h-8 w-28 px-3 text-[11px] font-medium",
+                  active
+                    ? "bg-honey border-honey text-primary-foreground placeholder:text-primary-foreground/80 font-semibold"
+                    : "text-muted-foreground",
+                )}
+              />
+            </div>
+          );
+        }}
       </form.Field>
 
       <form.Field
@@ -90,14 +105,16 @@ export function FilterPanel({ value, onChange }: FilterPanelProps) {
       >
         {(field) => (
           <div className="space-y-1">
-            <Label htmlFor="diet">Diet</Label>
+            <Label htmlFor="diet" className="sr-only">
+              Diet
+            </Label>
             <select
               id="diet"
               className={SELECT_CLASS}
               value={field.state.value}
               onChange={(event) => field.handleChange(event.target.value)}
             >
-              <option value="">Any</option>
+              <option value="">Diet</option>
               {DIETS.map((diet) => (
                 <option key={diet} value={diet}>
                   {diet}
@@ -113,13 +130,26 @@ export function FilterPanel({ value, onChange }: FilterPanelProps) {
         listeners={{ onChange: ({ value: checked }) => onChange({ alcohol: checked }) }}
       >
         {(field) => (
-          <div className="flex items-center gap-2 pt-6">
+          <div
+            className={cn(
+              "border-border flex h-8 items-center gap-2 rounded-lg border px-3",
+              field.state.value ? "" : "bg-honey border-honey",
+            )}
+          >
             <Switch
               id="alcohol"
               checked={field.state.value}
               onCheckedChange={(checked) => field.handleChange(checked)}
             />
-            <Label htmlFor="alcohol">Alcoholic drink</Label>
+            <Label
+              htmlFor="alcohol"
+              className={cn(
+                "text-[11px] font-medium",
+                field.state.value ? "text-muted-foreground" : "text-primary-foreground font-semibold",
+              )}
+            >
+              {field.state.value ? "Alcoholic drink" : "Spirit-free"}
+            </Label>
           </div>
         )}
       </form.Field>

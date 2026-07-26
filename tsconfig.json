@@ -15,7 +15,6 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "types": ["vitest/globals"],
-    "baseUrl": ".",
     "paths": { "@/*": ["./src/*"] }
   },
   "include": ["src", "netlify", "tests", "vite.config.ts"]
