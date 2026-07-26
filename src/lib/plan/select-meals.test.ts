@@ -107,6 +107,18 @@ describe("selectMeals", () => {
     expect(result.meals).toHaveLength(2);
   });
 
+  it("falls back to the default pool when relaxation drops the last filter", async () => {
+    const filterMealsByCategory = vi.fn(async () => [summary("9")]);
+    const result = await selectMeals(
+      request({ cuisine: "Italian" }),
+      [],
+      makeDeps({ filterMealsByArea: vi.fn(async () => []), filterMealsByCategory }),
+    );
+    expect(result.relaxedFilters).toEqual(["cuisine"]);
+    expect(filterMealsByCategory).toHaveBeenCalledWith("Chicken");
+    expect(result.meals.map((meal) => meal.id)).toEqual(["9"]);
+  });
+
   it("still ranks by the weather bias when the user has filtered", async () => {
     const filterMealsByCategory = vi.fn(async () => [summary("3")]);
     const many = [summary("1"), summary("2"), summary("3")];

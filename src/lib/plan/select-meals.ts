@@ -37,20 +37,11 @@ const activeNames = (filters: ActiveFilters): string[] =>
     .filter(([, value]) => value !== undefined)
     .map(([name]) => name);
 
-/**
- * The defaults exist to give an unfiltered request a pool to draw from. Applying them as a ranking
- * bias over an explicit user filter would discard matches the user asked for, so they are fetched
- * only when the weather supplies a bias or when they are the sole source of candidates.
- */
-function biasCategoriesFor(
-  preferredCategories: readonly string[],
-  hasUserFilters: boolean,
-): readonly string[] {
-  if (preferredCategories.length > 0) {
-    return preferredCategories;
-  }
-  return hasUserFilters ? [] : DEFAULT_CATEGORIES;
-}
+const fetchCategorySets = (
+  categories: readonly string[],
+  deps: MealSelectionDeps,
+): Promise<MealSummary[][]> =>
+  Promise.all(categories.map((category) => deps.filterMealsByCategory(category)));
 
 async function userFilterSets(
   filters: ActiveFilters,
@@ -69,13 +60,25 @@ async function userFilterSets(
   return Promise.all(requests);
 }
 
+/**
+ * The weather's categories do double duty as the ranking bias and, absent user filters, the pool.
+ * The generic defaults are only ever a pool of last resort: ranking by them would discard matches
+ * an explicit filter asked for. They are fetched lazily because relaxation can strip the last
+ * filter away and leave nothing else to draw from.
+ */
 async function candidatesFor(
   filters: ActiveFilters,
-  biasSets: MealSummary[][],
+  bias: { categories: readonly string[]; sets: MealSummary[][] },
   deps: MealSelectionDeps,
 ): Promise<MealSummary[]> {
   const sets = await userFilterSets(filters, deps);
-  return sets.length > 0 ? intersectMealSets(sets) : unionMealSets(biasSets);
+  if (sets.length > 0) {
+    return intersectMealSets(sets);
+  }
+  if (bias.categories.length > 0) {
+    return unionMealSets(bias.sets);
+  }
+  return unionMealSets(await fetchCategorySets(DEFAULT_CATEGORIES, deps));
 }
 
 export async function selectMeals(
@@ -88,23 +91,22 @@ export async function selectMeals(
     ingredient: request.ingredient,
     diet: request.diet,
   };
-  const biasCategories = biasCategoriesFor(preferredCategories, activeNames(filters).length > 0);
-
   try {
-    const biasSets = await Promise.all(
-      biasCategories.map((category) => deps.filterMealsByCategory(category)),
-    );
-    const biasIds = new Set(biasSets.flat().map((entry) => entry.id));
+    const bias = {
+      categories: preferredCategories,
+      sets: await fetchCategorySets(preferredCategories, deps),
+    };
+    const biasIds = new Set(bias.sets.flat().map((entry) => entry.id));
 
     const relaxedFilters: string[] = [];
-    let candidates = await candidatesFor(filters, biasSets, deps);
+    let candidates = await candidatesFor(filters, bias, deps);
 
     if (candidates.length === 0) {
       const dropped = nextRelaxation(activeNames(filters));
       if (dropped !== null) {
         relaxedFilters.push(dropped);
         filters = { ...filters, [dropped]: undefined };
-        candidates = await candidatesFor(filters, biasSets, deps);
+        candidates = await candidatesFor(filters, bias, deps);
       }
     }
 
