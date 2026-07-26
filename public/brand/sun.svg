@@ -1,0 +1,16 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Sun">
+<path id="Vector" d="M64 93.4054C80.2402 93.4054 93.4054 80.2402 93.4054 64C93.4054 47.7598 80.2402 34.5946 64 34.5946C47.7598 34.5946 34.5946 47.7598 34.5946 64C34.5946 80.2402 47.7598 93.4054 64 93.4054Z" fill="#FFF6E8" fill-opacity="0.55"/>
+<path id="Vector_2" d="M64 86.4865C76.4189 86.4865 86.4865 76.4189 86.4865 64C86.4865 51.5811 76.4189 41.5135 64 41.5135C51.5811 41.5135 41.5135 51.5811 41.5135 64C41.5135 76.4189 51.5811 86.4865 64 86.4865Z" fill="#F2B45A"/>
+<g id="Group">
+<path id="Vector_3" d="M64 13.8378V27.6757" stroke="white" stroke-opacity="0.85" stroke-width="5" stroke-linecap="round"/>
+<path id="Vector_4" d="M64 100.324V114.162" stroke="white" stroke-opacity="0.85" stroke-width="5" stroke-linecap="round"/>
+<path id="Vector_5" d="M13.8378 64H27.6757" stroke="white" stroke-opacity="0.85" stroke-width="5" stroke-linecap="round"/>
+<path id="Vector_6" d="M100.324 64H114.162" stroke="white" stroke-opacity="0.85" stroke-width="5" stroke-linecap="round"/>
+<path id="Vector_7" d="M25.9459 25.9459L35.4595 35.4595" stroke="white" stroke-opacity="0.85" stroke-width="5" stroke-linecap="round"/>
+<path id="Vector_8" d="M92.5405 92.5405L102.054 102.054" stroke="white" stroke-opacity="0.85" stroke-width="5" stroke-linecap="round"/>
+<path id="Vector_9" d="M102.054 25.9459L92.5405 35.4595" stroke="white" stroke-opacity="0.85" stroke-width="5" stroke-linecap="round"/>
+<path id="Vector_10" d="M35.4595 92.5405L25.9459 102.054" stroke="white" stroke-opacity="0.85" stroke-width="5" stroke-linecap="round"/>
+</g>
+</g>
+</svg>

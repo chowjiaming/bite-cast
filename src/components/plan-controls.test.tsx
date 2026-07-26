@@ -11,14 +11,14 @@ describe("LocationBar", () => {
     const onSearch = vi.fn();
     render(<LocationBar placeLabel="Toronto" onSearch={onSearch} />);
     await userEvent.type(screen.getByLabelText(/city/i), "  Singapore  ");
-    await userEvent.click(screen.getByRole("button", { name: /search/i }));
+    await userEvent.click(screen.getByRole("button", { name: /plan my day/i }));
     expect(onSearch).toHaveBeenCalledWith("Singapore");
   });
 
   it("does not submit an empty query and explains why", async () => {
     const onSearch = vi.fn();
     render(<LocationBar placeLabel={null} onSearch={onSearch} />);
-    await userEvent.click(screen.getByRole("button", { name: /search/i }));
+    await userEvent.click(screen.getByRole("button", { name: /plan my day/i }));
     expect(onSearch).not.toHaveBeenCalled();
     expect(await screen.findByText(/enter a city/i)).toBeInTheDocument();
   });
@@ -27,13 +27,8 @@ describe("LocationBar", () => {
     render(<LocationBar placeLabel={null} onSearch={vi.fn()} />);
     const input = screen.getByLabelText(/city/i);
     await userEvent.type(input, "Osaka");
-    await userEvent.click(screen.getByRole("button", { name: /search/i }));
+    await userEvent.click(screen.getByRole("button", { name: /plan my day/i }));
     expect(input).toHaveValue("");
-  });
-
-  it("shows the resolved place", () => {
-    render(<LocationBar placeLabel="Toronto, Canada" onSearch={vi.fn()} />);
-    expect(screen.getByText(/Toronto, Canada/)).toBeInTheDocument();
   });
 
   it("offers to return to ip geolocation when a city override is active", async () => {

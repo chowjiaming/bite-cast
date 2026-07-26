@@ -23,7 +23,7 @@ export function LocationBar({ placeLabel, onSearch, onUseMyLocation }: LocationB
 
   return (
     <form
-      className="flex flex-wrap items-end gap-3"
+      className="flex flex-wrap items-center gap-2.5"
       onSubmit={(event) => {
         event.preventDefault();
         void form.handleSubmit();
@@ -33,13 +33,16 @@ export function LocationBar({ placeLabel, onSearch, onUseMyLocation }: LocationB
         {(field) => {
           const message = firstErrorMessage(field.state.meta.errors);
           return (
-            <div className="grow space-y-1">
-              <Label htmlFor="city">City</Label>
+            <div className="min-w-[12rem] grow space-y-1 sm:max-w-[20rem] sm:grow-0">
+              <Label htmlFor="city" className="sr-only">
+                City
+              </Label>
               <Input
                 id="city"
                 value={field.state.value}
                 placeholder={placeLabel ?? "Enter a city"}
                 aria-invalid={message !== null}
+                className="bg-background/55 h-10"
                 onBlur={field.handleBlur}
                 onChange={(event) => field.handleChange(event.target.value)}
               />
@@ -52,14 +55,18 @@ export function LocationBar({ placeLabel, onSearch, onUseMyLocation }: LocationB
           );
         }}
       </form.Field>
-      <Button type="submit">Search</Button>
+      <Button type="submit" className="h-10 px-4 text-[13px] font-semibold">
+        Plan my day
+      </Button>
       {onUseMyLocation === undefined ? null : (
-        <Button type="button" variant="ghost" onClick={onUseMyLocation}>
+        <Button
+          type="button"
+          variant="ghost"
+          className="text-primary h-auto px-1 text-xs font-medium"
+          onClick={onUseMyLocation}
+        >
           Use my location
         </Button>
-      )}
-      {placeLabel === null ? null : (
-        <p className="text-muted-foreground w-full text-sm">Showing {placeLabel}</p>
       )}
     </form>
   );
