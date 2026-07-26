@@ -49,6 +49,22 @@ describe("lookupDrink", () => {
     });
   });
 
+  it("treats optional alcohol as non-alcoholic", async () => {
+    const drink = await lookupDrink(
+      "12560",
+      respondWith({ drinks: [{ ...lookupFixture.drinks[0], strAlcoholic: "Optional alcohol" }] }),
+    );
+    expect(drink?.alcoholic).toBe(false);
+  });
+
+  it("reads a case-insensitive alcoholic flag", async () => {
+    const drink = await lookupDrink(
+      "11007",
+      respondWith({ drinks: [{ ...lookupFixture.drinks[0], strAlcoholic: "alcoholic" }] }),
+    );
+    expect(drink?.alcoholic).toBe(true);
+  });
+
   it("returns null when the id is unknown", async () => {
     expect(await lookupDrink("0", respondWith({ drinks: null }))).toBeNull();
   });
