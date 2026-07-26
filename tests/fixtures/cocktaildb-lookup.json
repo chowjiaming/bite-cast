@@ -1,0 +1,17 @@
+{
+  "drinks": [
+    {
+      "idDrink": "12560",
+      "strDrink": "Afterglow",
+      "strDrinkThumb": "https://www.thecocktaildb.com/images/media/drink/vuquyv1468876052.jpg",
+      "strAlcoholic": "Non alcoholic",
+      "strInstructions": "Mix. Serve chilled.",
+      "strIngredient1": "Grenadine",
+      "strIngredient2": "Orange juice",
+      "strIngredient3": "",
+      "strMeasure1": "1 part",
+      "strMeasure2": "4 parts",
+      "strMeasure3": ""
+    }
+  ]
+}
