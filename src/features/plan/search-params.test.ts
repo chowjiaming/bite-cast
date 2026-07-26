@@ -1,5 +1,29 @@
 import { describe, expect, it } from "vitest";
-import { normalisePlanSearch, planQueryString } from "./search-params";
+import { normalisePlanSearch, planQueryString, recoverPlanSearch } from "./search-params";
+
+describe("recoverPlanSearch", () => {
+  it("returns a valid search unchanged", () => {
+    expect(recoverPlanSearch({ alcohol: true, q: "Paris" })).toEqual({
+      alcohol: true,
+      q: "Paris",
+    });
+  });
+
+  it("drops an invalid date and keeps sibling filters", () => {
+    expect(
+      recoverPlanSearch({
+        alcohol: true,
+        q: "Paris",
+        date: "26-07-2026",
+        cuisine: "French",
+      }),
+    ).toEqual({ alcohol: true, q: "Paris", cuisine: "French" });
+  });
+
+  it("falls back to defaults when the whole payload is unusable", () => {
+    expect(recoverPlanSearch(null)).toEqual({ alcohol: true });
+  });
+});
 
 describe("normalisePlanSearch", () => {
   it("drops blank strings so they never reach the api", () => {

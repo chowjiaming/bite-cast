@@ -31,6 +31,25 @@ describe("fetchDayPlan", () => {
     await expect(failure).rejects.toMatchObject({ code: "place_not_found", status: 404 });
   });
 
+  it("preserves field-level issues from an invalid_request body", async () => {
+    const failure = fetchDayPlan(
+      { alcohol: true, date: "26-07-2026" },
+      respondWith(
+        {
+          error: "invalid_request",
+          message: "Some search parameters were not understood.",
+          issues: [{ path: "date", message: "expected a real YYYY-MM-DD date" }],
+        },
+        400,
+      ),
+    );
+    await expect(failure).rejects.toMatchObject({
+      code: "invalid_request",
+      status: 400,
+      issues: [{ path: "date", message: "expected a real YYYY-MM-DD date" }],
+    });
+  });
+
   it("throws internal_error when the error body is unreadable", async () => {
     const failure = fetchDayPlan({ alcohol: true }, respondWith("not json at all", 500));
     await expect(failure).rejects.toMatchObject({ code: "internal_error" });

@@ -1,6 +1,28 @@
-import type { PlanRequest } from "@/lib/contracts";
+import { planRequestSchema, type PlanRequest } from "@/lib/contracts";
 
 const ORDERED_KEYS = ["q", "date", "cuisine", "ingredient", "diet"] as const;
+
+const recordFromUnknown = (raw: unknown): Record<string, unknown> =>
+  typeof raw === "object" && raw !== null ? Object.fromEntries(Object.entries(raw)) : {};
+
+/**
+ * Softens invalid URL search params so the router does not hard-fail: drop each
+ * offending key and re-parse. Valid sibling filters are kept.
+ */
+export function recoverPlanSearch(raw: unknown): PlanRequest {
+  const first = planRequestSchema.safeParse(raw);
+  if (first.success) {
+    return first.data;
+  }
+  const record = recordFromUnknown(raw);
+  for (const issue of first.error.issues) {
+    const key = issue.path[0];
+    if (typeof key === "string") {
+      delete record[key];
+    }
+  }
+  return planRequestSchema.parse(record);
+}
 
 const present = (value: string | undefined): string | undefined => {
   const trimmed = value?.trim();

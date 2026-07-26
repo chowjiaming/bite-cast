@@ -10,12 +10,13 @@ import { PlanSkeleton } from "@/components/plan-skeleton";
 import { PlanSummary } from "@/components/plan-summary";
 import { SourcesFooter } from "@/components/sources-footer";
 import { ApiError } from "@/features/plan/api";
+import { recoverPlanSearch } from "@/features/plan/search-params";
 import { useDayPlan } from "@/features/plan/use-day-plan";
-import { FORECAST_DAYS, planRequestSchema, type PlanRequest } from "@/lib/contracts";
+import { FORECAST_DAYS, type PlanRequest } from "@/lib/contracts";
 import { forecastDates, todayInTimeZone } from "@/lib/date";
 
 export const Route = createFileRoute("/")({
-  validateSearch: planRequestSchema,
+  validateSearch: recoverPlanSearch,
   component: PlanPage,
 });
 
@@ -32,7 +33,20 @@ export function PlanErrorAlerts({ error }: { error: unknown }) {
     return <p role="alert">No place matched that search. Try another city.</p>;
   }
 
-  return <p role="alert">{error.message}</p>;
+  return (
+    <div role="alert" className="space-y-1">
+      <p>{error.message}</p>
+      {error.issues.length === 0 ? null : (
+        <ul className="text-muted-foreground list-inside list-disc text-sm">
+          {error.issues.map((issue) => (
+            <li key={`${issue.path}:${issue.message}`}>
+              {issue.path === "" ? issue.message : `${issue.path}: ${issue.message}`}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 function PlanPage() {
@@ -69,6 +83,11 @@ function PlanPage() {
             : [plan.place.name, plan.place.country].filter(Boolean).join(", ")
         }
         onSearch={(query) => patchSearch({ q: query, date: undefined })}
+        onUseMyLocation={
+          search.q === undefined
+            ? undefined
+            : () => patchSearch({ q: undefined, date: undefined })
+        }
       />
       <DayPicker
         dates={dates}

@@ -1,6 +1,7 @@
 import {
   apiErrorSchema,
   dayPlanSchema,
+  type ApiErrorBody,
   type ApiErrorCode,
   type DayPlan,
   type PlanRequest,
@@ -9,11 +10,14 @@ import { planQueryString } from "./search-params";
 
 const MAX_RETRIES = 1;
 
+export type ApiIssue = NonNullable<ApiErrorBody["issues"]>[number];
+
 export class ApiError extends Error {
   constructor(
     readonly code: ApiErrorCode,
     readonly status: number,
     message: string,
+    readonly issues: ApiIssue[] = [],
   ) {
     super(message);
     this.name = "ApiError";
@@ -37,7 +41,7 @@ export async function fetchDayPlan(
     const body = await response.json().catch(() => null);
     const parsed = apiErrorSchema.safeParse(body);
     throw parsed.success
-      ? new ApiError(parsed.data.error, response.status, parsed.data.message)
+      ? new ApiError(parsed.data.error, response.status, parsed.data.message, parsed.data.issues ?? [])
       : new ApiError("internal_error", response.status, "The server response was unreadable.");
   }
 
