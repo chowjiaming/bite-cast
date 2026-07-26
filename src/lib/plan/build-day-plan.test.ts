@@ -159,7 +159,7 @@ describe("buildDayPlan", () => {
     ).rejects.toMatchObject({ code: "invalid_request" });
   });
 
-  it("returns a plan with no drink and a warning when the drink lookup fails", async () => {
+  it("returns a plan with no drink and a warning when the drink filter fails", async () => {
     const deps = makeDeps({
       filterDrinks: vi.fn(async () => {
         throw new UpstreamError("thecocktaildb", "http_error", "thecocktaildb returned 500");
@@ -170,16 +170,50 @@ describe("buildDayPlan", () => {
     expect(plan.meta.warnings).toContain("Drink suggestions are temporarily unavailable.");
   });
 
-  it("carries relaxed filters through to the payload", async () => {
+  it("returns a plan with no drink and a warning when the drink lookup fails", async () => {
+    const deps = makeDeps({
+      lookupDrink: vi.fn(async () => {
+        throw new UpstreamError("thecocktaildb", "http_error", "thecocktaildb returned 500");
+      }),
+    });
+    const plan = await buildDayPlan({ request: request({ q: "Singapore" }), clientIp: null }, deps);
+    expect(plan.drink).toBeNull();
+    expect(plan.meta.warnings).toContain("Drink suggestions are temporarily unavailable.");
+  });
+
+  it("returns no drink without a warning when there are no candidates", async () => {
+    const deps = makeDeps({ filterDrinks: vi.fn(async () => []) });
+    const plan = await buildDayPlan({ request: request({ q: "Singapore" }), clientIp: null }, deps);
+    expect(plan.drink).toBeNull();
+    expect(plan.meta.warnings).not.toContain("Drink suggestions are temporarily unavailable.");
+  });
+
+  it("carries relaxed filters and meal warnings through to the payload", async () => {
     const deps = makeDeps({
       filterMealsByArea: vi.fn(async () => [summary("1")]),
       filterMealsByIngredient: vi.fn(async () => [summary("99")]),
+      lookupMeal: vi.fn(async () => null),
     });
     const plan = await buildDayPlan(
       { request: request({ q: "Singapore", cuisine: "Italian", ingredient: "durian" }), clientIp: null },
       deps,
     );
     expect(plan.meta.relaxedFilters).toEqual(["ingredient"]);
+    expect(plan.meta.warnings).toContain("No recipes matched — try a wider filter.");
+  });
+
+  it("does not consult the ip when a city search is given", async () => {
+    const deps = makeDeps();
+    await buildDayPlan({ request: request({ q: "Singapore" }), clientIp: "203.0.113.7" }, deps);
+    expect(deps.geocodeCity).toHaveBeenCalledWith("Singapore");
+    expect(deps.locateByIp).not.toHaveBeenCalled();
+  });
+
+  it("does not geocode when resolving from the ip", async () => {
+    const deps = makeDeps();
+    await buildDayPlan({ request: request(), clientIp: "203.0.113.7" }, deps);
+    expect(deps.locateByIp).toHaveBeenCalledWith("203.0.113.7");
+    expect(deps.geocodeCity).not.toHaveBeenCalled();
   });
 
   it("throws PlanError instances so the handler can map them", async () => {
